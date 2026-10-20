@@ -3,142 +3,154 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="本地计算电商活动价、单笔估算利润和保本售价。">
-  <title>活动别报亏｜电商保本价计算器</title>
+  <meta name="description" content="本地比较电商活动方案，测单笔贡献利润、保本价、保本订单量与活动总结果。">
+  <meta name="theme-color" content="#f4f7f5">
+  <title>活动别报亏｜电商活动决策实验室</title>
   <style>
-    :root { color-scheme: light; --ink:#17211f; --muted:#61716d; --line:#dce5e1; --paper:#f5f8f6; --brand:#087e65; --warn:#fff4dc; }
-    * { box-sizing:border-box; }
-    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
-    main { max-width:980px; margin:36px auto; padding:0 18px 48px; }
-    header { margin-bottom:22px; }
-    h1 { margin:0 0 8px; font-size:clamp(25px,4vw,36px); }
-    h2 { margin:0 0 14px; font-size:19px; }
-    p { margin:6px 0; color:var(--muted); }
-    .layout { display:grid; grid-template-columns:1.1fr .9fr; gap:18px; align-items:start; }
-    section { background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:0 4px 18px #183b2c08; }
-    .fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    label { display:block; color:var(--muted); font-size:14px; }
-    input { display:block; width:100%; margin-top:5px; padding:11px 12px; border:1px solid var(--line); border-radius:9px; color:var(--ink); font:inherit; }
-    input:focus { outline:2px solid #b5e4d6; border-color:var(--brand); }
-    .hint { margin:14px 0; padding:12px; border-radius:10px; background:var(--warn); color:#674b12; font-size:14px; }
-    button { border:0; border-radius:9px; padding:11px 16px; background:var(--brand); color:#fff; font:inherit; font-weight:650; cursor:pointer; }
-    button.secondary { background:#eaf1ee; color:var(--ink); }
-    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
-    .result { display:grid; grid-template-columns:1fr auto; gap:10px; margin:0; }
-    .result dt { color:var(--muted); }
-    .result dd { margin:0; font-weight:700; text-align:right; }
-    .big { font-size:24px; color:var(--brand); }
-    .status { margin:16px 0; padding:12px; border-radius:10px; background:#eaf7f2; font-weight:650; }
-    .status.loss { background:#fff0ed; color:#8b2d20; }
-    .status.pending { background:#fff4dc; color:#674b12; }
-    .small { font-size:13px; }
-    footer { margin-top:18px; }
-    @media (max-width:720px) { main { margin:20px auto; } .layout { grid-template-columns:1fr; } section { padding:16px; } }
-    @media (max-width:430px) { .fields { grid-template-columns:1fr; } }
+    :root{color-scheme:light;--ink:#17211f;--muted:#63736e;--line:#dce6e1;--paper:#f4f7f5;--brand:#087e65;--brand-soft:#e6f5ef;--warn:#fff4d9;--bad:#fff0ed;--shadow:0 10px 32px #19372c0a}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}button,input{font:inherit}main{max-width:1120px;margin:34px auto;padding:0 18px 60px}header{margin-bottom:22px}.eyebrow{color:var(--brand);font-size:13px;font-weight:750;letter-spacing:.08em}h1{font-size:clamp(27px,4vw,38px);line-height:1.2;margin:5px 0 10px}h2{font-size:19px;margin:0 0 14px}h3{font-size:16px;margin:0}p{margin:5px 0;color:var(--muted)}.lead{font-size:16px}.privacy{display:inline-flex;gap:7px;align-items:center;margin-top:10px;padding:6px 10px;border-radius:20px;background:#e7f3ef;color:#246b57;font-size:13px;font-weight:650}.layout{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}.panel,.scenario{background:#fff;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:var(--shadow)}.panel{position:sticky;top:14px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:block;color:var(--muted);font-size:13px}.field input{display:block;width:100%;margin-top:5px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:#fff}.field input:focus{outline:2px solid #b6e4d6;border-color:var(--brand)}.field.full{grid-column:1/-1}.hint{margin-top:14px;padding:11px;border-radius:10px;background:var(--warn);color:#725217;font-size:13px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}button{border:0;border-radius:9px;padding:9px 12px;background:var(--brand);color:#fff;font-weight:700;cursor:pointer}button.secondary{background:#edf2ef;color:var(--ink)}button.danger{background:#fff0ed;color:#8c3428}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.scenarios{display:grid;gap:13px}.scenario{padding:16px}.scenario-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}.scenario-top input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--line);padding:6px 2px;color:var(--ink);font-weight:750;font-size:16px}.scenario-top input:focus{outline:none;border-color:var(--brand)}.scenario-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.result{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:13px}.metric{padding:10px;border-radius:10px;background:#f5f8f6}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;margin-top:3px;font-size:17px}.metric.primary{background:var(--brand-soft)}.metric.primary strong{color:var(--brand);font-size:20px}.metric.loss{background:var(--bad)}.metric.loss strong{color:#a13d31}.readout{margin-top:10px;padding:10px 12px;border-radius:10px;background:#f2f6f4;color:#42564f;font-size:13px}.readout.warn{background:var(--warn);color:#725217}.readout.bad{background:var(--bad);color:#8c3428}.summary{margin-top:15px;overflow-x:auto}.summary table{width:100%;min-width:650px;border-collapse:collapse;font-size:13px}.summary th,.summary td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}.summary th{color:var(--muted);font-weight:650}.summary td:last-child,.summary th:last-child{text-align:right}.fineprint{margin-top:18px;font-size:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:850px){.layout{grid-template-columns:1fr}.panel{position:static}.scenario-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){main{margin:20px auto}.panel,.scenario{padding:14px}.result{grid-template-columns:repeat(2,1fr)}.scenario-fields{grid-template-columns:1fr 1fr}.section-head{align-items:flex-start}.actions button{flex:1}}
   </style>
 </head>
 <body>
   <main>
     <header>
+      <div class="eyebrow">给小商家的活动前检查工具</div>
       <h1>活动别报亏</h1>
-      <p>填入你确认过的成本和费率，估算活动价下每单还剩多少。页面在本机浏览器计算，不上传输入内容。</p>
+      <p class="lead">同一款商品，摆在一起比较不同活动价、优惠和预估销量。先看每单贡献，再看整场活动能不能回本。</p>
+      <span class="privacy">🔒 本地计算 · 自动保存在当前浏览器 · 不上传商品数据</span>
     </header>
     <div class="layout">
-      <section aria-labelledby="form-title">
-        <h2 id="form-title">输入数据（金额：元）</h2>
+      <section class="panel" aria-labelledby="base-title">
+        <h2 id="base-title">先填共用成本</h2>
         <div class="fields">
-          <label>买家实付<input id="revenue" type="number" min="0" step="0.01" value="100"></label>
-          <label>已确认平台补贴<input id="subsidy" type="number" min="0" step="0.01" value="0"></label>
-          <label>商品成本<input id="goods" type="number" min="0" step="0.01" value="35"></label>
-          <label>商家优惠（尚未从实付扣除时填）<input id="discount" type="number" min="0" step="0.01" value="0"></label>
-          <label>包装、运费等履约成本<input id="fulfillment" type="number" min="0" step="0.01" value="8"></label>
-          <label>平台及支付费率（%）<input id="platformRate" type="number" min="0" step="0.01" value="5"></label>
-          <label>达人/分销佣金率（%）<input id="commissionRate" type="number" min="0" step="0.01" value="10"></label>
-          <label>广告分摊、售后损耗及其他单笔成本<input id="other" type="number" min="0" step="0.01" value="14"></label>
-          <label>待核成本金额（当前不计入结果）<input id="unknown" type="number" min="0" step="0.01" placeholder="留空表示未知"></label>
+          <label class="field">商品成本（元）<input data-base="goods" type="number" min="0" step="0.01" placeholder="必填"></label>
+          <label class="field">包装与履约成本（元）<input data-base="fulfillment" type="number" min="0" step="0.01" placeholder="必填"></label>
+          <label class="field">其他单笔成本（元）<input data-base="other" type="number" min="0" step="0.01" placeholder="必填"></label>
+          <label class="field">平台及支付费率（%）<input data-base="platformRate" type="number" min="0" max="99.99" step="0.01" placeholder="按实核对"></label>
+          <label class="field">达人/分销佣金率（%）<input data-base="commissionRate" type="number" min="0" max="99.99" step="0.01" placeholder="无则填 0"></label>
+          <label class="field">活动固定投入（元）<input data-base="fixedSpend" type="number" min="0" step="0.01" placeholder="如坑位费"></label>
         </div>
-        <div class="hint">费率按“买家实付”作为计算基数，仅当你的平台规则确实如此时使用。未知费率不能当作 0；补贴只有确认可结算后才计入。</div>
+        <div class="hint">费率暂按“买家实付”计收。先核实平台计费基数、优惠承担方和补贴结算条件。未知不要猜成 0；必填项留空时只显示待补资料。</div>
         <div class="actions">
-          <button id="calculate">重新计算</button>
-          <button id="reset" class="secondary" type="button">恢复演示数据</button>
+          <button id="addScenario" type="button">＋ 添加方案</button>
+          <button id="exportCsv" class="secondary" type="button">导出对比 CSV</button>
+          <button id="resetDemo" class="secondary" type="button">载入演示方案</button>
+          <button id="clearData" class="danger" type="button">清除本机数据</button>
         </div>
+        <p id="saveState" class="fineprint" aria-live="polite">数据仅保存在此浏览器。</p>
       </section>
-      <section aria-labelledby="result-title" aria-live="polite">
-        <h2 id="result-title">测算结果</h2>
-        <div id="status" class="status"></div>
-        <dl class="result">
-          <dt>确认收入</dt><dd id="outIncome">—</dd>
-          <dt>估算单笔利润</dt><dd id="outProfit" class="big">—</dd>
-          <dt>估算利润率</dt><dd id="outMargin">—</dd>
-          <dt>已知固定成本</dt><dd id="outFixed">—</dd>
-          <dt>已知比例费率合计</dt><dd id="outRate">—</dd>
-          <dt>估算保本售价</dt><dd id="outBreakEven">—</dd>
-        </dl>
-        <p id="notice" class="small"></p>
-        <p class="small">公式：估算利润 = 确认收入 − 明确成本 − 按确认基数计算的比例费用。结果仅反映输入数据，不是会计净利润或到账保证。</p>
+      <section aria-label="活动方案对比">
+        <div class="section-head"><div><h2>方案实验台</h2><p>优惠额只在未计入买家实付时填写，避免重复扣除。</p></div></div>
+        <div id="scenarios" class="scenarios"></div>
+        <div class="summary">
+          <h2>横向对比</h2>
+          <table><thead><tr><th>方案</th><th>单笔贡献</th><th>保本价</th><th>保本订单</th><th>预计活动净额</th></tr></thead><tbody id="comparison"></tbody></table>
+        </div>
       </section>
     </div>
-    <footer><p class="small">本工具用于经营测算练习，不代替平台规则、税务或会计核对。报名前请核实费率、计费基数、优惠承担方和补贴到账条件。</p></footer>
+    <p class="fineprint">口径：单笔贡献 = 买家实付 + 已确认补贴 − 商品及单笔成本 − 按买家实付计的比例费用。预计活动净额 = 单笔贡献 × 预估订单 − 活动固定投入。保本订单向上取整。估算仅供经营复核，不是会计净利润、平台结算承诺或经营建议。</p>
   </main>
   <script>
-    // 读取并校验用户输入，空白字段保持未知，不自动当作零。
-    const ids = ['revenue','subsidy','goods','discount','fulfillment','platformRate','commissionRate','other','unknown'];
-    const $ = (id) => document.getElementById(id);
-    const money = (n) => `${n.toFixed(2)} 元`;
-    function read(id) {
-      const raw = $(id).value.trim();
-      if (raw === '') return null;
-      const n = Number(raw);
-      return Number.isFinite(n) && n >= 0 ? n : NaN;
+    // 所有输入只在当前页面计算；本地保存方便下次继续比较。
+    const STORAGE_KEY = 'campaign-lab-v1';
+    const baseDefaults = {goods:'', fulfillment:'', other:'', platformRate:'', commissionRate:'', fixedSpend:''};
+    const scenarioDefaults = () => ({name:'新方案', price:'', coupon:'0', subsidy:'0', orders:'', adPerOrder:'0'});
+    const demo = {
+      base:{goods:'35',fulfillment:'8',other:'6',platformRate:'5',commissionRate:'10',fixedSpend:'300'},
+      scenarios:[
+        {name:'日常价',price:'109',coupon:'0',subsidy:'0',orders:'50',adPerOrder:'2'},
+        {name:'限时活动',price:'99',coupon:'5',subsidy:'3',orders:'100',adPerOrder:'4'},
+        {name:'大促低价',price:'89',coupon:'8',subsidy:'3',orders:'140',adPerOrder:'6'}
+      ]
+    };
+    let state = loadState();
+    const $ = (selector, root=document) => root.querySelector(selector);
+    const money = value => Number.isFinite(value) ? `${value.toFixed(2)} 元` : '待补资料';
+    function loadState(){
+      try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); if(saved && saved.base && Array.isArray(saved.scenarios)) return saved; } catch(_error) { /* 忽略无效的本地草稿 */ }
+      return {base:{...baseDefaults},scenarios:[{...scenarioDefaults(),name:'日常价',price:'100'},{...scenarioDefaults(),name:'活动价',price:'90'},{...scenarioDefaults(),name:'低价冲量',price:'80'}]};
     }
-    function calculate() {
-      const v = Object.fromEntries(ids.map((id) => [id, read(id)]));
-      const status = $('status');
-      const notice = [];
-      if (Object.values(v).some((n) => Number.isNaN(n))) {
-        status.className = 'status loss'; status.textContent = '请检查输入：金额和费率须为不小于 0 的数字。';
-        $('outIncome').textContent = $('outProfit').textContent = $('outMargin').textContent = '—';
-        $('outFixed').textContent = $('outRate').textContent = $('outBreakEven').textContent = '—'; $('notice').textContent = ''; return;
-      }
-      if (v.revenue === null || v.goods === null) {
-        status.className = 'status pending'; status.textContent = '请至少填写买家实付和商品成本。'; return;
-      }
-      const income = v.revenue + (v.subsidy || 0);
-      const fixed = (v.goods || 0) + (v.discount || 0) + (v.fulfillment || 0) + (v.other || 0);
-      const rate = ((v.platformRate || 0) + (v.commissionRate || 0)) / 100;
-      const variable = v.revenue * rate;
-      const profit = income - fixed - variable;
-      const margin = income > 0 ? profit / income * 100 : null;
-      const hasMissingCosts = ['fulfillment','platformRate','commissionRate','other'].some((id) => v[id] === null);
-      // 只有费率与固定成本齐全、且没有补贴时才反推保本售价，避免制造假精确。
-      const canBreakEven = !hasMissingCosts && v.subsidy === 0 && v.discount !== null;
-      const breakEven = canBreakEven && rate < 1 ? fixed / (1 - rate) : null;
-      $('outIncome').textContent = money(income);
-      $('outProfit').textContent = money(profit);
-      $('outMargin').textContent = margin === null ? '无法计算' : `${margin.toFixed(2)}%`;
-      $('outFixed').textContent = money(fixed);
-      $('outRate').textContent = `${(rate * 100).toFixed(2)}%`;
-      $('outBreakEven').textContent = !canBreakEven ? '资料不足，暂不反推' : (breakEven === null ? '费率合计≥100%，无法反推' : money(breakEven));
-      if (hasMissingCosts || v.discount === null || v.subsidy === null) {
-        status.className = 'status pending'; status.textContent = profit < 0 ? '已知项小计为负；仍有空项，完整利润待核' : '已知项小计；空白成本/费率没有计入，完整利润待核';
-      } else if (profit < 0) { status.className = 'status loss'; status.textContent = '按已填完整数据估算为亏损'; }
-      else if (profit === 0) { status.className = 'status pending'; status.textContent = '按已填完整数据估算刚好保本'; }
-      else { status.className = 'status'; status.textContent = '按已填完整数据估算为正利润'; }
-      if (v.unknown !== null) notice.push(`你填写了待核成本 ${money(v.unknown)}；它没有计入已知项小计，请核实后填入对应成本项目。`);
-      if (v.subsidy > 0) notice.push('补贴已按你输入的金额计入确认收入，请确认它确实符合结算条件。');
-      if (v.discount > 0) notice.push('商家优惠已作为额外成本扣除；若买家实付已反映优惠，请将此项设为 0，避免重复扣除。');
-      if (v.platformRate === null || v.commissionRate === null || v.fulfillment === null || v.other === null) notice.push('有成本或费率留空，结果只是已知项估算，实际利润可能更低。');
-      if (v.subsidy === null) notice.push('补贴金额留空，不能确认是否有可计入结算的补贴。');
-      if (v.subsidy > 0) notice.push('有补贴时保本售价会受到补贴条件影响，因此本工具暂不反推保本售价。');
-      $('notice').textContent = notice.join(' ');
+    function save(){
+      try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); $('#saveState').textContent='已保存在此浏览器；数据没有上传。'; }
+      catch(_error){ $('#saveState').textContent='浏览器未允许本地保存；关闭页面后数据可能丢失。'; }
     }
-    $('calculate').addEventListener('click', calculate);
-    ids.forEach((id) => $(id).addEventListener('input', calculate));
-    $('reset').addEventListener('click', () => {
-      const demo = {revenue:100,subsidy:0,goods:35,discount:0,fulfillment:8,platformRate:5,commissionRate:10,other:14,unknown:''};
-      Object.entries(demo).forEach(([id,value]) => { $(id).value = value; }); calculate();
+    function num(value){ if(value==='' || value===null || value===undefined) return null; const n=Number(value); return Number.isFinite(n)&&n>=0 ? n : NaN; }
+    function inputField(label,key,value,placeholder='填 0 或已核实金额'){
+      return `<label class="field">${label}<input data-scenario="${key}" type="number" min="0" step="0.01" value="${escapeAttr(value)}" placeholder="${placeholder}"></label>`;
+    }
+    function escapeAttr(value){return String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
+    function render(){
+      document.querySelectorAll('[data-base]').forEach(el=>{el.value=state.base[el.dataset.base]??'';});
+      $('#scenarios').innerHTML=state.scenarios.map((item,index)=>`
+        <article class="scenario" data-index="${index}">
+          <div class="scenario-top"><label class="sr-only" for="scenario-name-${index}">方案名称</label><input id="scenario-name-${index}" data-scenario="name" value="${escapeAttr(item.name)}" aria-label="方案名称"><button class="danger remove" type="button" ${state.scenarios.length<=1?'disabled':''}>移除</button></div>
+          <div class="scenario-fields">
+            ${inputField('买家实付（元）','price',item.price,'必填')}
+            ${inputField('商家优惠（元）','coupon',item.coupon)}
+            ${inputField('已确认补贴（元）','subsidy',item.subsidy)}
+            ${inputField('预估订单数（单）','orders',item.orders,'必填')}
+            ${inputField('广告等单笔投放（元）','adPerOrder',item.adPerOrder)}
+          </div>
+          <div class="result" aria-live="polite">
+            <div class="metric primary"><span>每单贡献利润</span><strong data-out="unit">待补资料</strong></div>
+            <div class="metric"><span>贡献利润率</span><strong data-out="margin">待补资料</strong></div>
+            <div class="metric"><span>估算保本价</span><strong data-out="breakeven">待补资料</strong></div>
+            <div class="metric"><span>活动保本订单</span><strong data-out="orders">待补资料</strong></div>
+          </div>
+          <div class="readout" data-out="net">填完整共用成本和方案数据后显示活动净额。</div>
+        </article>`).join('');
+      calculateAll();
+    }
+    function calculate(item){
+      const b=Object.fromEntries(Object.entries(state.base).map(([k,v])=>[k,num(v)]));
+      const s=Object.fromEntries(Object.entries(item).filter(([k])=>k!=='name').map(([k,v])=>[k,num(v)]));
+      const required=['goods','fulfillment','other','platformRate','commissionRate','fixedSpend','price','coupon','subsidy','orders','adPerOrder'];
+      if(required.some(k=>b[k]===null||Number.isNaN(b[k])||s[k]===null||Number.isNaN(s[k]))) return {complete:false};
+      const rate=(b.platformRate+b.commissionRate)/100;
+      if(rate>=1) return {complete:false,invalidRate:true};
+      const fixedUnit=b.goods+b.fulfillment+b.other+s.coupon;
+      const fees=s.price*rate;
+      const unit=s.price+s.subsidy-fixedUnit-fees-s.adPerOrder;
+      const revenue=s.price+s.subsidy;
+      const margin=revenue>0?unit/revenue*100:null;
+      const breakeven=Math.max(0,(fixedUnit+s.adPerOrder-s.subsidy)/(1-rate));
+      const targetOrders=unit>0?Math.ceil(b.fixedSpend/unit):null;
+      const net=unit*s.orders-b.fixedSpend;
+      return {complete:true,unit,margin,breakeven,targetOrders,net,orders:s.orders,fixedSpend:b.fixedSpend};
+    }
+    function calculateAll(){
+      const results=[];
+      document.querySelectorAll('.scenario').forEach((card,index)=>{
+        const r=calculate(state.scenarios[index]);results.push(r);
+        const unit=$('[data-out="unit"]',card), margin=$('[data-out="margin"]',card), be=$('[data-out="breakeven"]',card), target=$('[data-out="orders"]',card), net=$('[data-out="net"]',card), primary=$('.metric.primary',card);
+        if(!r.complete){const message=r.invalidRate?'比例费率合计达到 100%，无法计算。':'资料未齐：补全共用成本、费率、售价和预估订单；未知项不要填 0。'; unit.textContent=margin.textContent=be.textContent=target.textContent='待补资料';net.textContent=message;net.className='readout warn';primary.classList.remove('loss');return;}
+        unit.textContent=money(r.unit);margin.textContent=r.margin===null?'无法计算':`${r.margin.toFixed(2)}%`;be.textContent=money(r.breakeven);target.textContent=r.targetOrders===null?'单笔不盈利':`${r.targetOrders} 单`;
+        net.textContent=`按 ${r.orders} 单估算，活动净额 ${money(r.net)}（已扣活动固定投入 ${money(r.fixedSpend)}）。${r.net<0?'当前预估无法覆盖固定投入。':'当前预估可覆盖固定投入。'}`;net.className=`readout ${r.net<0?'bad':''}`;primary.classList.toggle('loss',r.unit<0);
+      });
+      $('#comparison').innerHTML=state.scenarios.map((s,i)=>{const r=results[i];return `<tr><td>${escapeAttr(s.name||`方案 ${i+1}`)}</td><td>${r.complete?money(r.unit):'待补资料'}</td><td>${r.complete?money(r.breakeven):'待补资料'}</td><td>${r.complete?(r.targetOrders===null?'无法覆盖':`${r.targetOrders} 单`):'待补资料'}</td><td>${r.complete?money(r.net):'待补资料'}</td></tr>`;}).join('');
+    }
+    document.addEventListener('input',event=>{
+      const target=event.target;
+      if(target.matches('[data-base]')) state.base[target.dataset.base]=target.value;
+      if(target.matches('[data-scenario]')){const card=target.closest('.scenario');if(!card)return;state.scenarios[Number(card.dataset.index)][target.dataset.scenario]=target.value;}
+      save();calculateAll();
     });
-    calculate();
+    document.addEventListener('click',event=>{
+      const card=event.target.closest('.scenario');
+      if(event.target.id==='addScenario'){if(state.scenarios.length>=6){alert('最多比较 6 个方案，保持结果易读。');return;}state.scenarios.push(scenarioDefaults());save();render();}
+      if(event.target.classList.contains('remove')&&card&&state.scenarios.length>1){state.scenarios.splice(Number(card.dataset.index),1);save();render();}
+      if(event.target.id==='resetDemo'){state=JSON.parse(JSON.stringify(demo));save();render();}
+      if(event.target.id==='clearData'){if(confirm('清除当前浏览器保存的成本和方案吗？此操作无法恢复。')){localStorage.removeItem(STORAGE_KEY);state={base:{...baseDefaults},scenarios:[{...scenarioDefaults(),name:'日常价'},{...scenarioDefaults(),name:'活动价'},{...scenarioDefaults(),name:'低价冲量'}]};render();$('#saveState').textContent='本机数据已清除。';}}
+      if(event.target.id==='exportCsv') exportCsv();
+    });
+    function exportCsv(){
+      const rows=[['方案','商品成本','履约成本','其他单笔成本','费率合计%','活动固定投入','买家实付','商家优惠','确认补贴','预估订单','单笔投放','单笔贡献','保本价','保本订单','预计活动净额']];
+      state.scenarios.forEach((s,i)=>{const r=calculate(s);rows.push([s.name||`方案${i+1}`,state.base.goods,state.base.fulfillment,state.base.other,Number(state.base.platformRate||0)+Number(state.base.commissionRate||0),state.base.fixedSpend,s.price,s.coupon,s.subsidy,s.orders,s.adPerOrder,r.complete?r.unit:'待补资料',r.complete?r.breakeven:'待补资料',r.complete?(r.targetOrders??'单笔不盈利'):'待补资料',r.complete?r.net:'待补资料']);});
+      const csv='\ufeff'+rows.map(row=>row.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='电商活动方案对比.csv';a.click();URL.revokeObjectURL(url);
+    }
+    render();
   </script>
 </body>
 </html>
