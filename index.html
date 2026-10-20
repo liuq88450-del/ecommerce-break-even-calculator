@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地计算电商活动价、单笔估算利润和保本售价。">
+  <title>活动别报亏｜电商保本价计算器</title>
+  <style>
+    :root { color-scheme: light; --ink:#17211f; --muted:#61716d; --line:#dce5e1; --paper:#f5f8f6; --brand:#087e65; --warn:#fff4dc; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.55 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+    main { max-width:980px; margin:36px auto; padding:0 18px 48px; }
+    header { margin-bottom:22px; }
+    h1 { margin:0 0 8px; font-size:clamp(25px,4vw,36px); }
+    h2 { margin:0 0 14px; font-size:19px; }
+    p { margin:6px 0; color:var(--muted); }
+    .layout { display:grid; grid-template-columns:1.1fr .9fr; gap:18px; align-items:start; }
+    section { background:#fff; border:1px solid var(--line); border-radius:16px; padding:20px; box-shadow:0 4px 18px #183b2c08; }
+    .fields { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    label { display:block; color:var(--muted); font-size:14px; }
+    input { display:block; width:100%; margin-top:5px; padding:11px 12px; border:1px solid var(--line); border-radius:9px; color:var(--ink); font:inherit; }
+    input:focus { outline:2px solid #b5e4d6; border-color:var(--brand); }
+    .hint { margin:14px 0; padding:12px; border-radius:10px; background:var(--warn); color:#674b12; font-size:14px; }
+    button { border:0; border-radius:9px; padding:11px 16px; background:var(--brand); color:#fff; font:inherit; font-weight:650; cursor:pointer; }
+    button.secondary { background:#eaf1ee; color:var(--ink); }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .result { display:grid; grid-template-columns:1fr auto; gap:10px; margin:0; }
+    .result dt { color:var(--muted); }
+    .result dd { margin:0; font-weight:700; text-align:right; }
+    .big { font-size:24px; color:var(--brand); }
+    .status { margin:16px 0; padding:12px; border-radius:10px; background:#eaf7f2; font-weight:650; }
+    .status.loss { background:#fff0ed; color:#8b2d20; }
+    .status.pending { background:#fff4dc; color:#674b12; }
+    .small { font-size:13px; }
+    footer { margin-top:18px; }
+    @media (max-width:720px) { main { margin:20px auto; } .layout { grid-template-columns:1fr; } section { padding:16px; } }
+    @media (max-width:430px) { .fields { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>活动别报亏</h1>
+      <p>填入你确认过的成本和费率，估算活动价下每单还剩多少。页面在本机浏览器计算，不上传输入内容。</p>
+    </header>
+    <div class="layout">
+      <section aria-labelledby="form-title">
+        <h2 id="form-title">输入数据（金额：元）</h2>
+        <div class="fields">
+          <label>买家实付<input id="revenue" type="number" min="0" step="0.01" value="100"></label>
+          <label>已确认平台补贴<input id="subsidy" type="number" min="0" step="0.01" value="0"></label>
+          <label>商品成本<input id="goods" type="number" min="0" step="0.01" value="35"></label>
+          <label>商家优惠（尚未从实付扣除时填）<input id="discount" type="number" min="0" step="0.01" value="0"></label>
+          <label>包装、运费等履约成本<input id="fulfillment" type="number" min="0" step="0.01" value="8"></label>
+          <label>平台及支付费率（%）<input id="platformRate" type="number" min="0" step="0.01" value="5"></label>
+          <label>达人/分销佣金率（%）<input id="commissionRate" type="number" min="0" step="0.01" value="10"></label>
+          <label>广告分摊、售后损耗及其他单笔成本<input id="other" type="number" min="0" step="0.01" value="14"></label>
+          <label>待核成本金额（当前不计入结果）<input id="unknown" type="number" min="0" step="0.01" placeholder="留空表示未知"></label>
+        </div>
+        <div class="hint">费率按“买家实付”作为计算基数，仅当你的平台规则确实如此时使用。未知费率不能当作 0；补贴只有确认可结算后才计入。</div>
+        <div class="actions">
+          <button id="calculate">重新计算</button>
+          <button id="reset" class="secondary" type="button">恢复演示数据</button>
+        </div>
+      </section>
+      <section aria-labelledby="result-title" aria-live="polite">
+        <h2 id="result-title">测算结果</h2>
+        <div id="status" class="status"></div>
+        <dl class="result">
+          <dt>确认收入</dt><dd id="outIncome">—</dd>
+          <dt>估算单笔利润</dt><dd id="outProfit" class="big">—</dd>
+          <dt>估算利润率</dt><dd id="outMargin">—</dd>
+          <dt>已知固定成本</dt><dd id="outFixed">—</dd>
+          <dt>已知比例费率合计</dt><dd id="outRate">—</dd>
+          <dt>估算保本售价</dt><dd id="outBreakEven">—</dd>
+        </dl>
+        <p id="notice" class="small"></p>
+        <p class="small">公式：估算利润 = 确认收入 − 明确成本 − 按确认基数计算的比例费用。结果仅反映输入数据，不是会计净利润或到账保证。</p>
+      </section>
+    </div>
+    <footer><p class="small">本工具用于经营测算练习，不代替平台规则、税务或会计核对。报名前请核实费率、计费基数、优惠承担方和补贴到账条件。</p></footer>
+  </main>
+  <script>
+    // 读取并校验用户输入，空白字段保持未知，不自动当作零。
+    const ids = ['revenue','subsidy','goods','discount','fulfillment','platformRate','commissionRate','other','unknown'];
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => `${n.toFixed(2)} 元`;
+    function read(id) {
+      const raw = $(id).value.trim();
+      if (raw === '') return null;
+      const n = Number(raw);
+      return Number.isFinite(n) && n >= 0 ? n : NaN;
+    }
+    function calculate() {
+      const v = Object.fromEntries(ids.map((id) => [id, read(id)]));
+      const status = $('status');
+      const notice = [];
+      if (Object.values(v).some((n) => Number.isNaN(n))) {
+        status.className = 'status loss'; status.textContent = '请检查输入：金额和费率须为不小于 0 的数字。';
+        $('outIncome').textContent = $('outProfit').textContent = $('outMargin').textContent = '—';
+        $('outFixed').textContent = $('outRate').textContent = $('outBreakEven').textContent = '—'; $('notice').textContent = ''; return;
+      }
+      if (v.revenue === null || v.goods === null) {
+        status.className = 'status pending'; status.textContent = '请至少填写买家实付和商品成本。'; return;
+      }
+      const income = v.revenue + (v.subsidy || 0);
+      const fixed = (v.goods || 0) + (v.discount || 0) + (v.fulfillment || 0) + (v.other || 0);
+      const rate = ((v.platformRate || 0) + (v.commissionRate || 0)) / 100;
+      const variable = v.revenue * rate;
+      const profit = income - fixed - variable;
+      const margin = income > 0 ? profit / income * 100 : null;
+      const hasMissingCosts = ['fulfillment','platformRate','commissionRate','other'].some((id) => v[id] === null);
+      // 只有费率与固定成本齐全、且没有补贴时才反推保本售价，避免制造假精确。
+      const canBreakEven = !hasMissingCosts && v.subsidy === 0 && v.discount !== null;
+      const breakEven = canBreakEven && rate < 1 ? fixed / (1 - rate) : null;
+      $('outIncome').textContent = money(income);
+      $('outProfit').textContent = money(profit);
+      $('outMargin').textContent = margin === null ? '无法计算' : `${margin.toFixed(2)}%`;
+      $('outFixed').textContent = money(fixed);
+      $('outRate').textContent = `${(rate * 100).toFixed(2)}%`;
+      $('outBreakEven').textContent = !canBreakEven ? '资料不足，暂不反推' : (breakEven === null ? '费率合计≥100%，无法反推' : money(breakEven));
+      if (hasMissingCosts || v.discount === null || v.subsidy === null) {
+        status.className = 'status pending'; status.textContent = profit < 0 ? '已知项小计为负；仍有空项，完整利润待核' : '已知项小计；空白成本/费率没有计入，完整利润待核';
+      } else if (profit < 0) { status.className = 'status loss'; status.textContent = '按已填完整数据估算为亏损'; }
+      else if (profit === 0) { status.className = 'status pending'; status.textContent = '按已填完整数据估算刚好保本'; }
+      else { status.className = 'status'; status.textContent = '按已填完整数据估算为正利润'; }
+      if (v.unknown !== null) notice.push(`你填写了待核成本 ${money(v.unknown)}；它没有计入已知项小计，请核实后填入对应成本项目。`);
+      if (v.subsidy > 0) notice.push('补贴已按你输入的金额计入确认收入，请确认它确实符合结算条件。');
+      if (v.discount > 0) notice.push('商家优惠已作为额外成本扣除；若买家实付已反映优惠，请将此项设为 0，避免重复扣除。');
+      if (v.platformRate === null || v.commissionRate === null || v.fulfillment === null || v.other === null) notice.push('有成本或费率留空，结果只是已知项估算，实际利润可能更低。');
+      if (v.subsidy === null) notice.push('补贴金额留空，不能确认是否有可计入结算的补贴。');
+      if (v.subsidy > 0) notice.push('有补贴时保本售价会受到补贴条件影响，因此本工具暂不反推保本售价。');
+      $('notice').textContent = notice.join(' ');
+    }
+    $('calculate').addEventListener('click', calculate);
+    ids.forEach((id) => $(id).addEventListener('input', calculate));
+    $('reset').addEventListener('click', () => {
+      const demo = {revenue:100,subsidy:0,goods:35,discount:0,fulfillment:8,platformRate:5,commissionRate:10,other:14,unknown:''};
+      Object.entries(demo).forEach(([id,value]) => { $(id).value = value; }); calculate();
+    });
+    calculate();
+  </script>
+</body>
+</html>
